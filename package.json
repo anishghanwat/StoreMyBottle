@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Digital bottle management system for bars and restaurants",
   "private": true,
+  "main": "index.js",
   "scripts": {
+    "start": "echo 'Please deploy from /backend directory' && exit 1",
     "setup": "chmod +x scripts/deploy-setup.sh && ./scripts/deploy-setup.sh",
     "install:all": "npm run install:backend && npm run install:customer && npm run install:bartender && npm run install:admin",
     "install:backend": "cd backend && npm install",
