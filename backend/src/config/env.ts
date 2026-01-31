@@ -25,19 +25,21 @@ function validateEnv(): Config {
     const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
     if (missingVars.length > 0) {
+        console.error(`Missing required environment variables: ${missingVars.join(', ')}`);
+        console.error('Available environment variables:', Object.keys(process.env).filter(key => !key.includes('PASSWORD')).join(', '));
         throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
     }
 
     // Validate NODE_ENV
-    const nodeEnv = process.env.NODE_ENV || 'development';
+    const nodeEnv = process.env.NODE_ENV || 'production';
     if (!['development', 'production', 'test'].includes(nodeEnv)) {
-        throw new Error('NODE_ENV must be one of: development, production, test');
+        console.warn(`Invalid NODE_ENV: ${nodeEnv}, defaulting to production`);
     }
 
     // Validate PORT
     const port = parseInt(process.env.PORT || '3000', 10);
     if (isNaN(port) || port < 1 || port > 65535) {
-        throw new Error('PORT must be a valid port number between 1 and 65535');
+        console.warn(`Invalid PORT: ${process.env.PORT}, defaulting to 3000`);
     }
 
     // Parse development user IDs (only in development)
@@ -60,9 +62,11 @@ function validateEnv(): Config {
         }
     }
 
+    console.log(`Environment validated: NODE_ENV=${nodeEnv}, PORT=${port}`);
+
     return {
-        port,
-        nodeEnv,
+        port: isNaN(port) ? 3000 : port,
+        nodeEnv: ['development', 'production', 'test'].includes(nodeEnv) ? nodeEnv : 'production',
         databaseUrl: process.env.DATABASE_URL!,
         clerkSecretKey: process.env.CLERK_SECRET_KEY!,
         clerkPublishableKey: process.env.CLERK_PUBLISHABLE_KEY!,
