@@ -35,22 +35,37 @@ app.set('trust proxy', 1);
 
 // CORS configuration
 const corsOptions = {
-  origin: env.nodeEnv === 'production'
-    ? [
-      'https://store-my-bottle-users.vercel.app',
-      'https://store-my-bottle-eqs5.vercel.app',
-      'https://storemybottle-bartender.vercel.app',
-      'https://storemybottle-admin.vercel.app',
-      ...(process.env.ALLOWED_ORIGINS?.split(',') || [])
-    ]
-    : [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:5175',
-      'http://127.0.0.1:5173',
-      'http://127.0.0.1:5174',
-      'http://127.0.0.1:5175'
-    ],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = env.nodeEnv === 'production'
+      ? [
+        'https://store-my-bottle-users.vercel.app',
+        'https://store-my-bottle-eqs5.vercel.app',
+        'https://storemybottle-bartender.vercel.app',
+        'https://storemybottle-admin.vercel.app',
+        ...(process.env.ALLOWED_ORIGINS?.split(',') || [])
+      ]
+      : [
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'http://localhost:5175',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:5174',
+        'http://127.0.0.1:5175'
+      ];
+
+    // Allow any Vercel preview URL for your project
+    const isVercelPreview = origin.includes('anishghanwat9-gmailcoms-projects.vercel.app') ||
+      origin.includes('store-my-bottle') && origin.includes('vercel.app');
+
+    if (allowedOrigins.includes(origin) || isVercelPreview) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID']
