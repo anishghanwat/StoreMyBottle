@@ -1,4 +1,5 @@
 // Vercel API endpoint - simplified approach
+// Updated to fix entrypoint detection
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
