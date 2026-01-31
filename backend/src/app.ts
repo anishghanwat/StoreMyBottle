@@ -89,13 +89,18 @@ app.get('/', (req: Request, res: Response) => {
 // Health check endpoint
 app.get('/api/health', async (req: Request, res: Response) => {
   try {
-    // Simple health check for Railway - don't test database connection
+    const dbConnected = await testConnection();
+
     const health = {
       message: 'StoreMyBottle API is running',
       status: 'ok',
       version: '1.0.0',
+      environment: env.nodeEnv,
       timestamp: new Date().toISOString(),
-      environment: env.nodeEnv
+      services: {
+        database: dbConnected ? 'connected' : 'disconnected',
+        clerk: 'configured'
+      }
     };
 
     res.json(health);
@@ -105,7 +110,13 @@ app.get('/api/health', async (req: Request, res: Response) => {
       status: 'error',
       timestamp: new Date().toISOString(),
       environment: env.nodeEnv,
-      error: 'Service unavailable'
+      services: {
+        database: 'error',
+        clerk: 'unknown'
+      },
+      error: env.nodeEnv === 'development'
+        ? (error instanceof Error ? error.message : 'Unknown error')
+        : 'Service unavailable'
     });
   }
 });
