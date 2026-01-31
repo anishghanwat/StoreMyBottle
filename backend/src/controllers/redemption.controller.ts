@@ -6,6 +6,7 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import { RedemptionModel, PegSize } from '../models/Redemption';
 import { PurchaseModel } from '../models/Purchase';
 import { QRService } from '../services/qr.service';
+import { getPool } from '../config/database';
 
 const redemptionModel = new RedemptionModel();
 const purchaseModel = new PurchaseModel();
@@ -24,7 +25,7 @@ export async function requestRedemption(req: AuthRequest, res: Response): Promis
     }
 
     const { purchase_id, peg_size_ml } = req.body;
-    
+
     if (!purchase_id || !peg_size_ml) {
       res.status(400).json({ error: 'purchase_id and peg_size_ml are required' });
       return;
@@ -55,7 +56,7 @@ export async function requestRedemption(req: AuthRequest, res: Response): Promis
 
     // Check if sufficient remaining mL
     if (purchase.remaining_ml < peg_size_ml) {
-      res.status(400).json({ 
+      res.status(400).json({
         error: 'Insufficient remaining milliliters',
         remaining_ml: purchase.remaining_ml,
         requested_ml: peg_size_ml
@@ -96,10 +97,8 @@ export async function getMyBottles(req: AuthRequest, res: Response): Promise<voi
     }
 
     // Get purchases with joined bottle and venue data
-    const { Pool } = require('pg');
-    const { getPool } = require('../config/database');
     const pool = getPool();
-    
+
     const result = await pool.query(
       `SELECT 
         p.id,
@@ -143,7 +142,7 @@ export async function scanRedemptionQR(req: AuthRequest, res: Response): Promise
     }
 
     const { qrData } = req.body;
-    
+
     if (!qrData) {
       res.status(400).json({ error: 'qrData is required' });
       return;
@@ -170,7 +169,7 @@ export async function scanRedemptionQR(req: AuthRequest, res: Response): Promise
     }
 
     if (redemption.status !== 'pending') {
-      res.status(400).json({ 
+      res.status(400).json({
         error: `Redemption already ${redemption.status}`,
         status: redemption.status
       });
@@ -191,7 +190,7 @@ export async function scanRedemptionQR(req: AuthRequest, res: Response): Promise
     }
 
     if (purchase.remaining_ml < redemption.peg_size_ml) {
-      res.status(400).json({ 
+      res.status(400).json({
         error: 'Insufficient remaining milliliters in bottle',
         remaining_ml: purchase.remaining_ml,
         requested_ml: redemption.peg_size_ml

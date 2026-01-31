@@ -4,6 +4,8 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth.middleware';
 import { UserSyncService } from '../services/user-sync.service';
+import { UserModel } from '../models/User';
+import { clerkClient } from '@clerk/express';
 import { env } from '../config/env';
 
 export type UserRole = 'customer' | 'bartender' | 'admin';
@@ -35,14 +37,12 @@ export function requireRole(...allowedRoles: UserRole[]) {
         return;
       }
 
-      const { UserModel } = require('../models/User');
       const userModel = new UserModel();
       let user = await userModel.findById(userId);
 
       // If user not in DB, try to sync from Clerk
       if (!user) {
         try {
-          const { clerkClient } = require('@clerk/express');
           const clerkUser = await clerkClient.users.getUser(userId);
           const meta = (clerkUser.publicMetadata ?? (clerkUser as any).public_metadata) as Record<string, unknown> | undefined;
           const roleFromClerk = getRoleFromMetadata(meta) ?? 'customer';
@@ -69,7 +69,6 @@ export function requireRole(...allowedRoles: UserRole[]) {
       // If DB role not allowed, try refreshing from Clerk
       if (!allowedRoles.includes(userRole)) {
         try {
-          const { clerkClient } = require('@clerk/express');
           const clerkUser = await clerkClient.users.getUser(userId);
           const meta = (clerkUser.publicMetadata ?? (clerkUser as any).public_metadata) as Record<string, unknown> | undefined;
           const clerkRole = getRoleFromMetadata(meta);

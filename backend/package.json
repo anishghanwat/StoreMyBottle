@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "StoreMyBottle Backend API",
   "main": "dist/app.js",
+  "type": "module",
   "scripts": {
     "dev": "nodemon src/app.ts",
     "build": "tsc",
@@ -14,7 +15,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "@clerk/express": "^1.7.0",
     "cors": "^2.8.5",

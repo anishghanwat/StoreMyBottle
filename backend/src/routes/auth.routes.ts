@@ -5,6 +5,7 @@ import { Router } from 'express';
 import { requireAuth, AuthRequest } from '../middleware/auth.middleware';
 import { UserSyncService } from '../services/user-sync.service';
 import { UserModel } from '../models/User';
+import { clerkClient } from '@clerk/express';
 
 const router = Router();
 const userSyncService = new UserSyncService();
@@ -27,7 +28,6 @@ router.get('/me', requireAuth, async (req: AuthRequest, res) => {
     if (!user) {
       try {
         // Try to get Clerk user data
-        const { clerkClient } = require('@clerk/express');
         const clerkUser = await clerkClient.users.getUser(userId);
 
         // Sync user to database

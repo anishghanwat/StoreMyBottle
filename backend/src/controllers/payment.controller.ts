@@ -3,7 +3,9 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import { PurchaseModel } from '../models/Purchase';
 import { BottleModel } from '../models/Bottle';
 import { VenueModel } from '../models/Venue';
+import { UserModel } from '../models/User';
 import { QRService } from '../services/qr.service';
+import { clerkClient } from '@clerk/express';
 
 const purchaseModel = new PurchaseModel();
 const bottleModel = new BottleModel();
@@ -25,13 +27,11 @@ export async function initiatePurchase(req: AuthRequest, res: Response): Promise
     }
 
     // Ensure user exists in database (sync from Clerk if needed)
-    const { UserModel } = require('../models/User');
     const userModel = new UserModel();
     let user = await userModel.findById(userId);
 
     if (!user) {
       try {
-        const { clerkClient } = require('@clerk/express');
         const clerkUser = await clerkClient.users.getUser(userId);
 
         // Create user in database
