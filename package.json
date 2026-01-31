@@ -1,0 +1,39 @@
+{
+  "name": "storemybottle-mvp",
+  "version": "1.0.0",
+  "description": "Digital bottle management system for bars and restaurants",
+  "private": true,
+  "scripts": {
+    "setup": "chmod +x scripts/deploy-setup.sh && ./scripts/deploy-setup.sh",
+    "install:all": "npm run install:backend && npm run install:customer && npm run install:bartender && npm run install:admin",
+    "install:backend": "cd backend && npm install",
+    "install:customer": "cd frontend-customer && npm install",
+    "install:bartender": "cd frontend-bartender && npm install",
+    "install:admin": "cd frontend-admin && npm install",
+    "build:all": "npm run build:backend && npm run build:customer && npm run build:bartender && npm run build:admin",
+    "build:backend": "cd backend && npm run build",
+    "build:customer": "cd frontend-customer && npm run build",
+    "build:bartender": "cd frontend-bartender && npm run build",
+    "build:admin": "cd frontend-admin && npm run build",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:customer": "cd frontend-customer && npm run dev",
+    "dev:bartender": "cd frontend-bartender && npm run dev",
+    "dev:admin": "cd frontend-admin && npm run dev",
+    "migrate:prod": "cd database && node run-migrations-production.js",
+    "seed:prod": "cd backend && node init-sample-data-production.js"
+  },
+  "keywords": [
+    "hospitality",
+    "bar",
+    "restaurant",
+    "bottle-management",
+    "qr-code",
+    "mvp"
+  ],
+  "author": "Your Name",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
