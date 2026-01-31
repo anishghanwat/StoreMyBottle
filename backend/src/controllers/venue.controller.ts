@@ -8,7 +8,9 @@ const venueModel = new VenueModel();
 
 export async function listVenues(req: Request, res: Response): Promise<void> {
   try {
+    console.log('Attempting to fetch venues...');
     const venues = await venueModel.findAll();
+    console.log('Venues fetched successfully:', venues.length);
     res.json({
       data: venues,
       count: venues.length,
@@ -16,9 +18,14 @@ export async function listVenues(req: Request, res: Response): Promise<void> {
     });
   } catch (error) {
     console.error('Error listing venues:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace'
+    });
     res.status(500).json({
       error: 'Failed to fetch venues',
       code: 'VENUES_FETCH_ERROR',
+      details: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
     });
   }
