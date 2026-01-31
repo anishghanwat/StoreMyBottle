@@ -26,18 +26,6 @@ function App() {
         publishableKey={clerkPubKey}
         signInUrl="/sign-in"
         afterSignInUrl="/pending-payments"
-        options={{
-          // Development SSL bypass
-          allowedRedirectOrigins: ['http://localhost:5174', 'https://localhost:5174'],
-          isSatellite: false,
-          domain: undefined,
-          // Disable SSL verification in development
-          ...(process.env.NODE_ENV === 'development' && {
-            experimental: {
-              skipSSLValidation: true
-            }
-          })
-        }}
       >
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <AuthTokenSetup />
