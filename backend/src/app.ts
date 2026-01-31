@@ -36,7 +36,13 @@ app.set('trust proxy', 1);
 // CORS configuration
 const corsOptions = {
   origin: env.nodeEnv === 'production'
-    ? process.env.ALLOWED_ORIGINS?.split(',') || []
+    ? [
+      'https://store-my-bottle-users.vercel.app',
+      'https://store-my-bottle-eqs5.vercel.app',
+      'https://storemybottle-bartender.vercel.app',
+      'https://storemybottle-admin.vercel.app',
+      ...(process.env.ALLOWED_ORIGINS?.split(',') || [])
+    ]
     : [
       'http://localhost:5173',
       'http://localhost:5174',
