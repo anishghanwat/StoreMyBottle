@@ -5,6 +5,7 @@
   "private": true,
   "main": "index.js",
   "scripts": {
+    "build": "npm run build:backend",
     "start": "echo 'Please deploy from /backend directory' && exit 1",
     "setup": "chmod +x scripts/deploy-setup.sh && ./scripts/deploy-setup.sh",
     "install:all": "npm run install:backend && npm run install:customer && npm run install:bartender && npm run install:admin",
