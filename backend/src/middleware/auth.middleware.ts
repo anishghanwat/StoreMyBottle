@@ -27,10 +27,17 @@ export async function requireAuth(
       return;
     }
 
+    // Debug: Log the authorization header
+    const authHeader = req.headers.authorization;
+    console.log('Auth header present:', !!authHeader);
+    console.log('Auth header format:', authHeader ? authHeader.substring(0, 20) + '...' : 'none');
+
     // Get user from Clerk
     const { userId } = getAuth(req);
+    console.log('Clerk userId extracted:', userId);
 
     if (!userId) {
+      console.log('No userId from Clerk - authentication failed');
       res.status(401).json({
         error: 'Unauthorized: Authentication required',
         code: 'AUTH_REQUIRED',
@@ -43,6 +50,7 @@ export async function requireAuth(
     req.userId = userId;
     req.user = { id: userId };
 
+    console.log('Authentication successful for user:', userId);
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
