@@ -73,8 +73,14 @@ class ApiService {
     };
 
     const token = authTokenGetter ? await authTokenGetter() : null;
+    console.log('🔍 API Debug - Token status:', token ? 'present' : 'missing');
+    console.log('🔍 API Debug - Token preview:', token ? token.substring(0, 30) + '...' : 'none');
+
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+      console.log('🔍 API Debug - Authorization header set');
+    } else {
+      console.log('🔍 API Debug - No token available, request will fail');
     }
 
     const config: RequestInit = {
@@ -84,13 +90,16 @@ class ApiService {
     };
 
     try {
+      console.log('🔍 API Debug - Making request to:', url);
       const response = await fetch(url, config);
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.log('🔍 API Debug - Request failed:', response.status, error);
         throw new Error(error.error || `HTTP error! status: ${response.status}`);
       }
 
+      console.log('🔍 API Debug - Request successful:', response.status);
       return await response.json();
     } catch (error) {
       console.error('API request failed:', error);
