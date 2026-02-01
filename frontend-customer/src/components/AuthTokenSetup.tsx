@@ -7,7 +7,8 @@ export function AuthTokenSetup() {
   const { getToken } = useAuth();
 
   useEffect(() => {
-    setAuthTokenGetter(() => getToken());
+    // Pass the getToken function directly - it's already async
+    setAuthTokenGetter(getToken);
   }, [getToken]);
 
   return null;
