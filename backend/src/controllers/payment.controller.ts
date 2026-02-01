@@ -31,9 +31,10 @@ export async function initiatePurchase(req: AuthRequest, res: Response): Promise
 
     if (!user) {
       try {
-        // Create minimal user record - we don't need full Clerk data for purchases
+        // Create minimal user record with unique email to avoid constraint issues
         user = await userModel.create({
           id: userId,
+          email: `${userId}@clerk.temp`, // Temporary unique email to avoid NULL constraint issues
           role: 'customer' // Default role for purchase initiation
         });
         console.log('Created minimal user record for production:', userId);
