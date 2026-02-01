@@ -8,11 +8,12 @@ import QRCode from 'qrcode';
 
 interface MyBottle {
   id: string;
-  remaining_ml: number;
-  bottle_name: string;
-  brand?: string;
-  total_ml?: number;
-  venue_name?: string;
+  brand: string;
+  type: string;
+  size: string;
+  venue_name: string;
+  pegs_remaining: number;
+  pegs_total: number;
 }
 
 type PegSize = 30 | 45 | 60;
@@ -36,16 +37,6 @@ export default function RedeemPeg() {
       setLoading(true);
       const bottles = await apiService.getMyBottles();
       const found = bottles.find((b) => b.id === purchaseId);
-      if (found) {
-        setBottle({
-          id: found.id,
-          remaining_ml: found.remaining_ml,
-          bottle_name: found.bottle_name,
-          brand: found.brand,
-          total_ml: found.total_ml,
-          venue_name: found.venue_name
-        });
-      }
       if (found) {
         setBottle(found);
       } else {
@@ -155,17 +146,19 @@ export default function RedeemPeg() {
       {bottle && (
         <>
           <div className="mb-6 p-4 border rounded-lg">
-            <h2 className="font-semibold mb-2">{bottle.bottle_name}</h2>
+            <h2 className="font-semibold mb-2">{bottle.brand} {bottle.type}</h2>
             <p className="text-sm text-gray-600">
-              Remaining: {bottle.remaining_ml}ml
+              Remaining: {bottle.pegs_remaining} pegs / {bottle.pegs_total} total
             </p>
+            <p className="text-sm text-gray-500">{bottle.venue_name}</p>
           </div>
 
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-4">Select Peg Size</h3>
             <div className="space-y-3">
               {pegSizes.map((size) => {
-                const isAvailable = bottle.remaining_ml >= size;
+                // For now, assume each peg is equivalent to 1 unit, so we can redeem if we have pegs remaining
+                const isAvailable = bottle.pegs_remaining > 0;
                 const isSelected = selectedPegSize === size;
 
                 return (
@@ -183,7 +176,7 @@ export default function RedeemPeg() {
                     <div className="flex justify-between items-center">
                       <span className="font-semibold text-lg">{size}ml</span>
                       {!isAvailable && (
-                        <span className="text-xs text-red-600">Insufficient</span>
+                        <span className="text-xs text-red-600">No pegs remaining</span>
                       )}
                     </div>
                   </button>

@@ -7,11 +7,14 @@ import { apiService, type Bottle } from '../services/api';
 
 // Extended interface for MyBottles response (includes joined data from backend)
 interface MyBottle extends Bottle {
-  bottle_name: string;
+  brand: string;
+  type: string;
+  size: string;
   venue_name: string;
   venue_address: string;
-  remaining_ml: number;
-  paid_at: string | null;
+  pegs_purchased: number;
+  pegs_total: number;
+  pegs_remaining: number;
 }
 
 export default function MyBottles() {
@@ -84,7 +87,7 @@ export default function MyBottles() {
       ) : (
         <div className="space-y-4">
           {bottles.map((bottle) => {
-            const percentage = (bottle.remaining_ml / bottle.total_ml) * 100;
+            const percentage = (bottle.pegs_remaining / bottle.pegs_total) * 100;
 
             return (
               <div
@@ -92,15 +95,15 @@ export default function MyBottles() {
                 className="p-4 border rounded-lg"
               >
                 <div className="mb-3">
-                  <h2 className="text-xl font-semibold">{bottle.bottle_name}</h2>
-                  <p className="text-gray-600 text-sm">{bottle.brand}</p>
+                  <h2 className="text-xl font-semibold">{bottle.brand}</h2>
+                  <p className="text-gray-600 text-sm">{bottle.type} - {bottle.size}</p>
                   <p className="text-gray-500 text-xs mt-1">{bottle.venue_name}</p>
                 </div>
 
                 <div className="mb-3">
                   <div className="flex justify-between text-sm mb-1">
-                    <span>Remaining</span>
-                    <span className="font-semibold">{bottle.remaining_ml}ml / {bottle.total_ml}ml</span>
+                    <span>Remaining Pegs</span>
+                    <span className="font-semibold">{bottle.pegs_remaining} / {bottle.pegs_total}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
@@ -110,7 +113,7 @@ export default function MyBottles() {
                   </div>
                 </div>
 
-                {bottle.remaining_ml > 0 && (
+                {bottle.pegs_remaining > 0 && (
                   <button
                     onClick={() => handleRedeem(bottle.id)}
                     className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold min-h-[44px]"

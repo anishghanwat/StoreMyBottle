@@ -133,19 +133,30 @@ class ApiService {
 
   // Redemption endpoints
   async getMyBottles(): Promise<Array<Bottle & {
-    bottle_name: string;
+    brand: string;
+    type: string;
+    size: string;
     venue_name: string;
     venue_address: string;
-    remaining_ml: number;
-    paid_at: string | null;
+    pegs_purchased: number;
+    pegs_total: number;
+    pegs_remaining: number;
   }>> {
-    return this.request<Array<Bottle & {
-      bottle_name: string;
-      venue_name: string;
-      venue_address: string;
-      remaining_ml: number;
-      paid_at: string | null;
-    }>>('/api/redemptions/my-bottles');
+    const response = await this.request<{
+      data: Array<Bottle & {
+        brand: string;
+        type: string;
+        size: string;
+        venue_name: string;
+        venue_address: string;
+        pegs_purchased: number;
+        pegs_total: number;
+        pegs_remaining: number;
+      }>;
+      message: string;
+    }>('/api/redemptions/my-bottles');
+
+    return response.data || [];
   }
 
   async requestRedemption(purchaseId: string, pegSizeMl: number): Promise<{ redemption: Redemption; qrCode: { data: string; imageDataUrl?: string } }> {
