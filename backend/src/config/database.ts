@@ -2,24 +2,31 @@
 // Note: pg package needs to be installed: npm install pg
 //       Types: npm install -D @types/pg
 
-import { Pool, PoolClient } from 'pg';
+import { Pool } from 'pg';
 
 let pool: Pool | null = null;
 
 export function getPool(): Pool {
   if (!pool) {
     const connectionString = process.env.DATABASE_URL;
-    
+
     if (!connectionString) {
       throw new Error('DATABASE_URL environment variable is not set');
     }
+
+    // Check if this is a Supabase connection
+    const isSupabase = connectionString.includes('supabase.co');
 
     pool = new Pool({
       connectionString,
       // Connection pool settings
       max: 20,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      connectionTimeoutMillis: 15000, // Increased timeout for network issues
+      // SSL configuration - Supabase requires SSL
+      ssl: isSupabase || process.env.NODE_ENV === 'production' ? {
+        rejectUnauthorized: false
+      } : false,
     });
 
     // Handle pool errors
