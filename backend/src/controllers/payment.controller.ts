@@ -5,7 +5,6 @@ import { BottleModel } from '../models/Bottle';
 import { VenueModel } from '../models/Venue';
 import { UserModel } from '../models/User';
 import { QRService } from '../services/qr.service';
-import { clerkClient } from '@clerk/express';
 
 const purchaseModel = new PurchaseModel();
 const bottleModel = new BottleModel();
@@ -26,27 +25,23 @@ export async function initiatePurchase(req: AuthRequest, res: Response): Promise
       return;
     }
 
-    // Ensure user exists in database (sync from Clerk if needed)
+    // Ensure user exists in database (create minimal user if needed)
     const userModel = new UserModel();
     let user = await userModel.findById(userId);
 
     if (!user) {
       try {
-        const clerkUser = await clerkClient.users.getUser(userId);
-
-        // Create user in database
+        // Create minimal user record - we don't need full Clerk data for purchases
         user = await userModel.create({
           id: userId,
-          email: clerkUser.emailAddresses?.[0]?.emailAddress || clerkUser.primaryEmailAddress?.emailAddress,
-          phone: clerkUser.phoneNumbers?.[0]?.phoneNumber || clerkUser.primaryPhoneNumber?.phoneNumber,
           role: 'customer' // Default role for purchase initiation
         });
-        console.log('User synced from Clerk:', userId);
+        console.log('Created minimal user record:', userId);
       } catch (syncError) {
-        console.error('Failed to sync user from Clerk:', syncError);
+        console.error('Failed to create user record:', syncError);
         res.status(500).json({
-          error: 'Failed to sync user data',
-          code: 'USER_SYNC_ERROR',
+          error: 'Failed to create user record',
+          code: 'USER_CREATE_ERROR',
           timestamp: new Date().toISOString()
         });
         return;
