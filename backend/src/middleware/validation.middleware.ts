@@ -58,7 +58,7 @@ export const schemas = {
 
     // Venue ID parameter validation
     venueIdParam: z.object({
-        venueId: z.string().uuid('Invalid venue ID format')
+        venueId: z.string().regex(/^\d+$/, 'Invalid venue ID format - must be a number')
     })
 };
 
