@@ -25,45 +25,52 @@ export async function initiatePurchase(req: AuthRequest, res: Response): Promise
       return;
     }
 
-    // Ensure user exists in database (create minimal user if needed)
-    const userModel = new UserModel();
-    let user = await userModel.findById(userId);
+    // TEMPORARY MVP BYPASS: Skip user creation for immediate MVP launch
+    // This allows purchases to work while we fix the user creation issue
+    if (process.env.BYPASS_AUTH === 'true') {
+      console.log('🚨 MVP MODE: Skipping user creation due to auth bypass');
+      // Continue with purchase without user record
+    } else {
+      // Ensure user exists in database (create minimal user if needed)
+      const userModel = new UserModel();
+      let user = await userModel.findById(userId);
 
-    if (!user) {
-      try {
-        // Create minimal user record with unique email to avoid constraint issues
-        user = await userModel.create({
-          id: userId,
-          email: `${userId}@clerk.temp`, // Temporary unique email to avoid NULL constraint issues
-          role: 'customer' // Default role for purchase initiation
-        });
-        console.log('Created minimal user record for production:', userId);
-      } catch (syncError) {
-        console.error('Failed to create user record:', syncError);
+      if (!user) {
+        try {
+          // Create minimal user record with unique email to avoid constraint issues
+          user = await userModel.create({
+            id: userId,
+            email: `${userId}@clerk.temp`, // Temporary unique email to avoid NULL constraint issues
+            role: 'customer' // Default role for purchase initiation
+          });
+          console.log('Created minimal user record for production:', userId);
+        } catch (syncError) {
+          console.error('Failed to create user record:', syncError);
 
-        // HOTFIX: If user creation fails, try to find the user again (might exist from another request)
-        user = await userModel.findById(userId);
-        if (!user) {
-          // If still no user, try creating with a more unique email
-          try {
-            const timestamp = Date.now();
-            user = await userModel.create({
-              id: userId,
-              email: `${userId}.${timestamp}@clerk.temp`,
-              role: 'customer'
-            });
-            console.log('Created user with timestamp email:', userId);
-          } catch (retryError) {
-            console.error('Retry user creation also failed:', retryError);
-            res.status(500).json({
-              error: 'Failed to create user record',
-              code: 'USER_CREATE_ERROR',
-              timestamp: new Date().toISOString()
-            });
-            return;
+          // HOTFIX: If user creation fails, try to find the user again (might exist from another request)
+          user = await userModel.findById(userId);
+          if (!user) {
+            // If still no user, try creating with a more unique email
+            try {
+              const timestamp = Date.now();
+              user = await userModel.create({
+                id: userId,
+                email: `${userId}.${timestamp}@clerk.temp`,
+                role: 'customer'
+              });
+              console.log('Created user with timestamp email:', userId);
+            } catch (retryError) {
+              console.error('Retry user creation also failed:', retryError);
+              res.status(500).json({
+                error: 'Failed to create user record',
+                code: 'USER_CREATE_ERROR',
+                timestamp: new Date().toISOString()
+              });
+              return;
+            }
+          } else {
+            console.log('User found on retry, continuing with purchase');
           }
-        } else {
-          console.log('User found on retry, continuing with purchase');
         }
       }
     }
