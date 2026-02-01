@@ -40,12 +40,31 @@ export async function initiatePurchase(req: AuthRequest, res: Response): Promise
         console.log('Created minimal user record for production:', userId);
       } catch (syncError) {
         console.error('Failed to create user record:', syncError);
-        res.status(500).json({
-          error: 'Failed to create user record',
-          code: 'USER_CREATE_ERROR',
-          timestamp: new Date().toISOString()
-        });
-        return;
+
+        // HOTFIX: If user creation fails, try to find the user again (might exist from another request)
+        user = await userModel.findById(userId);
+        if (!user) {
+          // If still no user, try creating with a more unique email
+          try {
+            const timestamp = Date.now();
+            user = await userModel.create({
+              id: userId,
+              email: `${userId}.${timestamp}@clerk.temp`,
+              role: 'customer'
+            });
+            console.log('Created user with timestamp email:', userId);
+          } catch (retryError) {
+            console.error('Retry user creation also failed:', retryError);
+            res.status(500).json({
+              error: 'Failed to create user record',
+              code: 'USER_CREATE_ERROR',
+              timestamp: new Date().toISOString()
+            });
+            return;
+          }
+        } else {
+          console.log('User found on retry, continuing with purchase');
+        }
       }
     }
 
