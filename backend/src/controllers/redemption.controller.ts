@@ -104,25 +104,34 @@ export async function getMyBottles(req: AuthRequest, res: Response): Promise<voi
         p.id,
         p.user_id,
         p.bottle_id,
-        p.venue_id,
+        p.pegs_purchased,
+        p.total_amount,
         p.payment_status,
-        p.remaining_ml,
+        p.payment_method,
+        p.qr_code,
         p.created_at,
-        p.paid_at,
-        b.name as bottle_name,
+        p.updated_at,
         b.brand,
-        b.total_ml,
+        b.type,
+        b.size,
+        b.price,
+        b.pegs_total,
+        b.pegs_remaining,
+        b.venue_id,
         v.name as venue_name,
         v.address as venue_address
        FROM purchases p
        JOIN bottles b ON p.bottle_id = b.id
-       JOIN venues v ON p.venue_id = v.id
+       JOIN venues v ON b.venue_id = v.id
        WHERE p.user_id = $1 AND p.payment_status = 'paid'
-       ORDER BY p.paid_at DESC`,
+       ORDER BY p.created_at DESC`,
       [userId]
     );
 
-    res.json(result.rows);
+    res.json({
+      data: result.rows,
+      message: 'User bottles retrieved successfully'
+    });
   } catch (error) {
     console.error('Error fetching user bottles:', error);
     res.status(500).json({ error: 'Failed to fetch bottles' });
