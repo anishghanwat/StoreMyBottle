@@ -17,17 +17,50 @@ export function getPool(): Pool {
     // Check if this is a Supabase connection
     const isSupabase = connectionString.includes('supabase.co');
 
-    pool = new Pool({
-      connectionString,
-      // Connection pool settings
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 15000, // Increased timeout for network issues
-      // SSL configuration - Supabase requires SSL
-      ssl: isSupabase || process.env.NODE_ENV === 'production' ? {
-        rejectUnauthorized: false
-      } : false,
-    });
+    // For Supabase in production, use explicit configuration to avoid IPv6 issues
+    if (isSupabase && process.env.NODE_ENV === 'production') {
+      try {
+        // Parse the connection string to extract components
+        const url = new URL(connectionString);
+
+        pool = new Pool({
+          host: url.hostname,
+          port: parseInt(url.port) || 5432,
+          database: url.pathname.slice(1),
+          user: url.username,
+          password: url.password,
+          // Connection pool settings
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 20000,
+          // Force SSL for Supabase
+          ssl: { rejectUnauthorized: false },
+        });
+      } catch (parseError) {
+        console.error('Failed to parse DATABASE_URL, falling back to connection string:', parseError);
+        // Fallback to connection string
+        pool = new Pool({
+          connectionString,
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 20000,
+          ssl: { rejectUnauthorized: false },
+        });
+      }
+    } else {
+      // Use connection string for local development or non-Supabase
+      pool = new Pool({
+        connectionString,
+        // Connection pool settings
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 15000,
+        // SSL configuration
+        ssl: isSupabase || process.env.NODE_ENV === 'production' ? {
+          rejectUnauthorized: false
+        } : false,
+      });
+    }
 
     // Handle pool errors
     pool.on('error', (err) => {
