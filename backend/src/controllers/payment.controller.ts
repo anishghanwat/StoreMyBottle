@@ -36,7 +36,7 @@ export async function initiatePurchase(req: AuthRequest, res: Response): Promise
           id: userId,
           role: 'customer' // Default role for purchase initiation
         });
-        console.log('Created minimal user record:', userId);
+        console.log('Created minimal user record for production:', userId);
       } catch (syncError) {
         console.error('Failed to create user record:', syncError);
         res.status(500).json({
