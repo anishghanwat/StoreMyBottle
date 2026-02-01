@@ -100,7 +100,7 @@ export async function markPaymentPaid(req: AuthRequest, res: Response): Promise<
       return;
     }
 
-    const updatedPurchase = await purchaseModel.markAsPaid(String(id), bottle.total_ml);
+    const updatedPurchase = await purchaseModel.markAsPaid(String(id), bottle.pegs_total);
     res.json(updatedPurchase);
   } catch (error) {
     if (error instanceof Error && error.message === 'Purchase not found or already paid') {

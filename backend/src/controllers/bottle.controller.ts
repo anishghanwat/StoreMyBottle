@@ -37,22 +37,24 @@ export async function getBottleById(req: Request, res: Response): Promise<void> 
 // Admin-only endpoints (to be implemented in Phase 9)
 export async function createBottle(req: Request, res: Response): Promise<void> {
   try {
-    const { venue_id, name, brand, price, total_ml, is_active } = req.body;
+    const { venue_id, brand, type, size, price, pegs_total, pegs_remaining, status } = req.body;
 
-    if (!venue_id || !name || !brand || !price || !total_ml) {
+    if (!venue_id || !brand || !type || !size || !price || !pegs_total) {
       res.status(400).json({
-        error: 'venue_id, name, brand, price, and total_ml are required'
+        error: 'venue_id, brand, type, size, price, and pegs_total are required'
       });
       return;
     }
 
     const bottle = await bottleModel.create({
       venue_id,
-      name,
       brand,
+      type,
+      size,
       price: parseFloat(price),
-      total_ml: parseInt(total_ml),
-      is_active: is_active !== undefined ? is_active : true
+      pegs_total: parseInt(pegs_total),
+      pegs_remaining: pegs_remaining !== undefined ? parseInt(pegs_remaining) : parseInt(pegs_total),
+      status: status || 'available'
     });
 
     res.status(201).json(bottle);
@@ -65,14 +67,16 @@ export async function createBottle(req: Request, res: Response): Promise<void> {
 export async function updateBottle(req: Request, res: Response): Promise<void> {
   try {
     const { id } = req.params;
-    const { name, brand, price, total_ml, is_active } = req.body;
+    const { brand, type, size, price, pegs_total, pegs_remaining, status } = req.body;
 
     const updates: any = {};
-    if (name !== undefined) updates.name = name;
     if (brand !== undefined) updates.brand = brand;
+    if (type !== undefined) updates.type = type;
+    if (size !== undefined) updates.size = size;
     if (price !== undefined) updates.price = parseFloat(price);
-    if (total_ml !== undefined) updates.total_ml = parseInt(total_ml);
-    if (is_active !== undefined) updates.is_active = is_active;
+    if (pegs_total !== undefined) updates.pegs_total = parseInt(pegs_total);
+    if (pegs_remaining !== undefined) updates.pegs_remaining = parseInt(pegs_remaining);
+    if (status !== undefined) updates.status = status;
 
     const bottle = await bottleModel.update(String(id), updates);
     res.json(bottle);

@@ -117,9 +117,10 @@ export async function getUserPurchases(req: AuthRequest, res: Response): Promise
 
         return {
           ...purchase,
-          bottle_name: bottle?.name,
           bottle_brand: bottle?.brand,
-          bottle_total_ml: bottle?.total_ml,
+          bottle_type: bottle?.type,
+          bottle_size: bottle?.size,
+          bottle_pegs_total: bottle?.pegs_total,
           venue_name: venue?.name
         };
       })
@@ -181,8 +182,9 @@ export async function getPurchase(req: AuthRequest, res: Response): Promise<void
 
     const enrichedPurchase = {
       ...purchase,
-      bottle_name: bottle?.name,
       bottle_brand: bottle?.brand,
+      bottle_type: bottle?.type,
+      bottle_size: bottle?.size,
       venue_name: venue?.name
     };
 
@@ -228,7 +230,7 @@ export async function markPaymentPaid(req: AuthRequest, res: Response): Promise<
       return;
     }
 
-    const updatedPurchase = await purchaseModel.markAsPaid(String(id), bottle.total_ml);
+    const updatedPurchase = await purchaseModel.markAsPaid(String(id), bottle.pegs_total);
     res.json(updatedPurchase);
   } catch (error) {
     if (error instanceof Error && error.message === 'Purchase not found or already paid') {

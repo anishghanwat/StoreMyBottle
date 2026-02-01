@@ -6,22 +6,26 @@ import { getPool } from '../config/database';
 export interface Bottle {
   id: string;
   venue_id: string;
-  name: string;
   brand: string;
+  type: string;
+  size: string;
   price: number;
-  total_ml: number;
-  is_active: boolean;
+  pegs_total: number;
+  pegs_remaining: number;
+  status: string;
   created_at: Date;
   updated_at: Date;
 }
 
 export interface CreateBottleInput {
   venue_id: string;
-  name: string;
   brand: string;
+  type: string;
+  size: string;
   price: number;
-  total_ml: number;
-  is_active?: boolean;
+  pegs_total: number;
+  pegs_remaining: number;
+  status?: string;
 }
 
 export class BottleModel {
@@ -37,8 +41,8 @@ export class BottleModel {
   async findByVenueId(venueId: string): Promise<Bottle[]> {
     const result = await this.pool.query(
       `SELECT * FROM bottles 
-       WHERE venue_id = $1 AND is_active = true
-       ORDER BY brand, name ASC`,
+       WHERE venue_id = $1 AND status = 'available'
+       ORDER BY brand, type ASC`,
       [venueId]
     );
     return result.rows.map(this.transformRow);
@@ -53,13 +57,13 @@ export class BottleModel {
   }
 
   async create(input: CreateBottleInput): Promise<Bottle> {
-    const { venue_id, name, brand, price, total_ml, is_active = true } = input;
+    const { venue_id, brand, type, size, price, pegs_total, pegs_remaining, status = 'available' } = input;
 
     const result = await this.pool.query(
-      `INSERT INTO bottles (venue_id, name, brand, price, total_ml, is_active)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO bottles (venue_id, brand, type, size, price, pegs_total, pegs_remaining, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [venue_id, name, brand, price, total_ml, is_active]
+      [venue_id, brand, type, size, price, pegs_total, pegs_remaining, status]
     );
 
     return this.transformRow(result.rows[0]);
@@ -71,25 +75,33 @@ export class BottleModel {
     let paramCount = 1;
 
     // Build update query with proper parameterized queries
-    if (input.name !== undefined) {
-      updates.push(`name = $${paramCount++}`);
-      values.push(input.name);
-    }
     if (input.brand !== undefined) {
       updates.push(`brand = $${paramCount++}`);
       values.push(input.brand);
+    }
+    if (input.type !== undefined) {
+      updates.push(`type = $${paramCount++}`);
+      values.push(input.type);
+    }
+    if (input.size !== undefined) {
+      updates.push(`size = $${paramCount++}`);
+      values.push(input.size);
     }
     if (input.price !== undefined) {
       updates.push(`price = $${paramCount++}`);
       values.push(input.price);
     }
-    if (input.total_ml !== undefined) {
-      updates.push(`total_ml = $${paramCount++}`);
-      values.push(input.total_ml);
+    if (input.pegs_total !== undefined) {
+      updates.push(`pegs_total = $${paramCount++}`);
+      values.push(input.pegs_total);
     }
-    if (input.is_active !== undefined) {
-      updates.push(`is_active = $${paramCount++}`);
-      values.push(input.is_active);
+    if (input.pegs_remaining !== undefined) {
+      updates.push(`pegs_remaining = $${paramCount++}`);
+      values.push(input.pegs_remaining);
+    }
+    if (input.status !== undefined) {
+      updates.push(`status = $${paramCount++}`);
+      values.push(input.status);
     }
 
     if (updates.length === 0) {
@@ -133,7 +145,8 @@ export class BottleModel {
     return {
       ...row,
       price: parseFloat(row.price),
-      total_ml: parseInt(row.total_ml, 10)
+      pegs_total: parseInt(row.pegs_total, 10),
+      pegs_remaining: parseInt(row.pegs_remaining, 10)
     };
   }
 
